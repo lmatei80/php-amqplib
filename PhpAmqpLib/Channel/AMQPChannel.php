@@ -168,7 +168,7 @@ class AMQPChannel extends AbstractChannel
 
         return $this->wait(array(
             $this->waitHelper->get_wait('channel.close_ok')
-        ));
+        ), false, $this->connection->getReadWriteTimeout());
     }
 
     /**
@@ -257,7 +257,7 @@ class AMQPChannel extends AbstractChannel
 
         return $this->wait(array(
             $this->waitHelper->get_wait('channel.open_ok')
-        ));
+        ), false, $this->connection->getReadWriteTimeout());
     }
 
     /**
@@ -302,7 +302,7 @@ class AMQPChannel extends AbstractChannel
 
         return $this->wait(array(
             $this->waitHelper->get_wait('access.request_ok')
-        ));
+        ), false, $this->connection->getReadWriteTimeout());
     }
 
     /**
@@ -365,7 +365,7 @@ class AMQPChannel extends AbstractChannel
 
         return $this->wait(array(
             $this->waitHelper->get_wait('exchange.declare_ok')
-        ));
+        ), false, $this->connection->getReadWriteTimeout());
     }
 
     /**
@@ -407,7 +407,7 @@ class AMQPChannel extends AbstractChannel
 
         return $this->wait(array(
             $this->waitHelper->get_wait('exchange.delete_ok')
-        ));
+        ), false, $this->connection->getReadWriteTimeout());
     }
 
     /**
@@ -457,7 +457,7 @@ class AMQPChannel extends AbstractChannel
 
         return $this->wait(array(
             $this->waitHelper->get_wait('exchange.bind_ok')
-        ));
+        ), false, $this->connection->getReadWriteTimeout());
     }
 
     /**
@@ -502,7 +502,7 @@ class AMQPChannel extends AbstractChannel
 
         return $this->wait(array(
             $this->waitHelper->get_wait('exchange.unbind_ok')
-        ));
+        ), false, $this->connection->getReadWriteTimeout());
     }
 
     /**
@@ -552,7 +552,7 @@ class AMQPChannel extends AbstractChannel
 
         return $this->wait(array(
             $this->waitHelper->get_wait('queue.bind_ok')
-        ));
+        ), false, $this->connection->getReadWriteTimeout());
     }
 
     /**
@@ -595,7 +595,7 @@ class AMQPChannel extends AbstractChannel
 
         return $this->wait(array(
             $this->waitHelper->get_wait('queue.unbind_ok')
-        ));
+        ), false, $this->connection->getReadWriteTimeout());
     }
 
     /**
@@ -650,7 +650,7 @@ class AMQPChannel extends AbstractChannel
 
         return $this->wait(array(
             $this->waitHelper->get_wait('queue.declare_ok')
-        ));
+        ), false, $this->connection->getReadWriteTimeout());
     }
 
     /**
@@ -698,7 +698,7 @@ class AMQPChannel extends AbstractChannel
 
         return $this->wait(array(
             $this->waitHelper->get_wait('queue.delete_ok')
-        ));
+        ), false, $this->connection->getReadWriteTimeout());
     }
 
     /**
@@ -733,7 +733,7 @@ class AMQPChannel extends AbstractChannel
 
         return $this->wait(array(
             $this->waitHelper->get_wait('queue.purge_ok')
-        ));
+        ), false, $this->connection->getReadWriteTimeout());
     }
 
     /**
@@ -883,7 +883,7 @@ class AMQPChannel extends AbstractChannel
 
         return $this->wait(array(
             $this->waitHelper->get_wait('basic.cancel_ok')
-        ));
+        ), false, $this->connection->getReadWriteTimeout());
     }
 
     /**
@@ -951,7 +951,7 @@ class AMQPChannel extends AbstractChannel
         if (false === $nowait) {
             $consumer_tag = $this->wait(array(
                 $this->waitHelper->get_wait('basic.consume_ok')
-            ));
+            ), false, $this->connection->getReadWriteTimeout());
         }
 
         $this->callbacks[$consumer_tag] = $callback;
@@ -1016,7 +1016,7 @@ class AMQPChannel extends AbstractChannel
         return $this->wait(array(
             $this->waitHelper->get_wait('basic.get_ok'),
             $this->waitHelper->get_wait('basic.get_empty')
-        ));
+        ), false, $this->connection->getReadWriteTimeout());
     }
 
     /**
@@ -1216,7 +1216,7 @@ class AMQPChannel extends AbstractChannel
 
         return $this->wait(array(
             $this->waitHelper->get_wait('basic.qos_ok')
-        ));
+        ), false, $this->connection->getReadWriteTimeout());
     }
 
     /**
@@ -1240,7 +1240,7 @@ class AMQPChannel extends AbstractChannel
 
         return $this->wait(array(
             $this->waitHelper->get_wait('basic.recover_ok')
-        ));
+        ), false, $this->connection->getReadWriteTimeout());
     }
 
     /**
@@ -1301,7 +1301,7 @@ class AMQPChannel extends AbstractChannel
 
         return $this->wait(array(
             $this->waitHelper->get_wait('tx.commit_ok')
-        ));
+        ), false, $this->connection->getReadWriteTimeout());
     }
 
     /**
@@ -1323,7 +1323,7 @@ class AMQPChannel extends AbstractChannel
 
         return $this->wait(array(
             $this->waitHelper->get_wait('tx.rollback_ok')
-        ));
+        ), false, $this->connection->getReadWriteTimeout());
     }
 
     /**
@@ -1352,7 +1352,7 @@ class AMQPChannel extends AbstractChannel
             return null;
         }
 
-        $this->wait(array($this->waitHelper->get_wait('confirm.select_ok')));
+        $this->wait(array($this->waitHelper->get_wait('confirm.select_ok')), false, $this->connection->getReadWriteTimeout());
         $this->next_delivery_tag = 1;
     }
 
@@ -1420,7 +1420,7 @@ class AMQPChannel extends AbstractChannel
 
         return $this->wait(array(
             $this->waitHelper->get_wait('tx.select_ok')
-        ));
+        ), false, $this->connection->getReadWriteTimeout());
     }
 
     /**

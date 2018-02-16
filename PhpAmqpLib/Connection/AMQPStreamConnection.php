@@ -20,6 +20,7 @@ class AMQPStreamConnection extends AbstractConnection
      * @param null $context
      * @param bool $keepalive
      * @param int $heartbeat
+     * @throws \Exception
      */
     public function __construct(
         $host,
@@ -57,7 +58,8 @@ class AMQPStreamConnection extends AbstractConnection
             $locale,
             $io,
             $heartbeat,
-            $connection_timeout
+            $connection_timeout,
+            $read_write_timeout
         );
 
         // save the params for the use of __clone, this will overwrite the parent

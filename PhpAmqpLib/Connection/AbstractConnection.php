@@ -116,6 +116,10 @@ class AbstractConnection extends AbstractChannel
     /** @var int Connection timeout value*/
     protected $connection_timeout ;
 
+    /** @var int */
+    protected $read_write_timeout;
+
+
     /**
      * Circular buffer to speed up prepare_content().
      * Max size limited by $prepare_content_cache_max_size.
@@ -139,6 +143,7 @@ class AbstractConnection extends AbstractChannel
      * @param AbstractIO $io
      * @param int $heartbeat
      * @param int $connection_timeout
+     * @param int $read_write_timeout
      * @throws \Exception
      */
     public function __construct(
@@ -151,7 +156,8 @@ class AbstractConnection extends AbstractChannel
         $locale = 'en_US',
         AbstractIO $io,
         $heartbeat = 0,
-        $connection_timeout = 0
+        $connection_timeout = 0,
+        $read_write_timeout = 0
     ) {
         // save the params for the use of __clone
         $this->construct_params = func_get_args();
@@ -165,6 +171,7 @@ class AbstractConnection extends AbstractChannel
         $this->io = $io;
         $this->heartbeat = $heartbeat;
         $this->connection_timeout = $connection_timeout;
+        $this->read_write_timeout = $read_write_timeout;
 
         if ($user && $password) {
             $this->login_response = new AMQPWriter();
@@ -219,7 +226,7 @@ class AbstractConnection extends AbstractChannel
                     $this->wait(array(
                         $this->waitHelper->get_wait('connection.secure'),
                         $this->waitHelper->get_wait('connection.tune')
-                    ));
+                    ), false, $this->connection_timeout);
                 }
 
                 $host = $this->x_open($this->vhost, '', $this->insist);
@@ -456,7 +463,7 @@ class AbstractConnection extends AbstractChannel
      * @param AMQPWriter|string $args
      * @param null $pkt
      */
-    protected function send_channel_method_frame($channel, $method_sig, $args = '', $pkt = null)
+    public function send_channel_method_frame($channel, $method_sig, $args = '', $pkt = null)
     {
         $pkt = $this->prepare_channel_method_frame($channel, $method_sig, $args, $pkt);
         $this->write($pkt->getvalue());
@@ -472,7 +479,7 @@ class AbstractConnection extends AbstractChannel
      * @param AMQPWriter $pkt
      * @return AMQPWriter
      */
-    protected function prepare_channel_method_frame($channel, $method_sig, $args = '', $pkt = null)
+    public function prepare_channel_method_frame($channel, $method_sig, $args = '', $pkt = null)
     {
         if ($args instanceof AMQPWriter) {
             $args = $args->getvalue();
@@ -560,7 +567,7 @@ class AbstractConnection extends AbstractChannel
      * @param int $timeout
      * @return array
      */
-    protected function wait_channel($channel_id, $timeout = 0)
+    public function wait_channel($channel_id, $timeout = 0)
     {
         // Keeping the original timeout unchanged.
         $_timeout = $timeout;
@@ -611,7 +618,7 @@ class AbstractConnection extends AbstractChannel
                 // itself) it's probably a close method in reaction to some
                 // error, so deal with it right away.
                 if (($frame_type == 1) && ($frame_channel == 0)) {
-                    $this->wait();
+                    $this->wait(null, false, $_timeout);
                 }
             }
         }
@@ -670,7 +677,7 @@ class AbstractConnection extends AbstractChannel
 
         return $this->wait(array(
             $this->waitHelper->get_wait('connection.close_ok')
-        ),false,$this->connection_timeout);
+        ),false,$this->read_write_timeout);
     }
 
     /**
@@ -732,7 +739,7 @@ class AbstractConnection extends AbstractChannel
             $wait[] = $this->waitHelper->get_wait('connection.redirect');
         }
 
-        return $this->wait($wait);
+        return $this->wait($wait, false, $this->read_write_timeout);
     }
 
     /**
@@ -980,4 +987,26 @@ class AbstractConnection extends AbstractChannel
     {
         return $this->server_properties;
     }
+
+    /**
+     * @return int
+     */
+    public function getConnectionTimeout()
+    {
+        return $this->connection_timeout;
+    }
+
+    /**
+     * @return int
+     */
+    public function getReadWriteTimeout()
+    {
+        return $this->read_write_timeout;
+    }
+
+    public function setReadWriteTimeout($timeout)
+    {
+        $this->read_write_timeout = $timeout;
+    }
+
 }

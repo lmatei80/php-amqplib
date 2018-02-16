@@ -41,6 +41,9 @@ class StreamIO extends AbstractIO
     /** @var float */
     protected $last_write;
 
+    /** @var float */
+    protected $start_write;
+
     /** @var array */
     protected $last_error;
 
@@ -258,11 +261,13 @@ class StreamIO extends AbstractIO
      * @return mixed|void
      * @throws \PhpAmqpLib\Exception\AMQPRuntimeException
      * @throws \PhpAmqpLib\Exception\AMQPTimeoutException
+     * @throws \ErrorException
      */
     public function write($data)
     {
         $written = 0;
         $len = mb_strlen($data, 'ASCII');
+        $this->start_write = microtime(true);
 
         while ($written < $len) {
 
@@ -294,7 +299,7 @@ class StreamIO extends AbstractIO
                 throw new AMQPRuntimeException('Broken pipe or closed connection');
             }
 
-            if ($this->timed_out()) {
+            if ($buffer === 0 && $this->timed_out()) {
                 throw new AMQPTimeoutException('Error sending data. Socket connection timed out');
             }
 
@@ -428,14 +433,14 @@ class StreamIO extends AbstractIO
     }
 
     /**
-     * @return mixed
+     * @return bool
      */
     protected function timed_out()
     {
-        // get status of socket to determine whether or not it has timed out
-        $info = stream_get_meta_data($this->sock);
-
-        return $info['timed_out'];
+        if (microtime(true) - $this->start_write > $this->read_write_timeout) {
+            return true;
+        }
+        return false;
     }
 
     /**
